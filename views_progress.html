@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Views Progress Tracker</title>
+
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Silkscreen&display=swap");
+
+body {
+  background: #111;
+  color: #eee;
+  font-family: "Silkscreen", monospace;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.m-goal {
+  width: 600px;
+  text-align: center;
+}
+
+.e-bar {
+  width: 100%;
+  height: 60px;
+  background: #222;
+  border: 2px solid #55aaff;
+  border-radius: 12px;
+  position: relative;
+  overflow: visible;
+}
+
+/* BLUE PROGRESS FILL */
+.e-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #33aaff, #66ccff, #3399ff);
+  border-radius: 12px 0 0 12px;
+  transition: width 1.8s ease-in-out;
+  position: relative; /* REQUIRED so image follows bar */
+  /* min-width: 40px;    keeps image visible at low progress */
+}
+
+.progress-icon {
+  position: absolute;
+  top: 5px;               
+  left: 0;
+  width: 90px;
+   /* Anchor scaling to the CENTER BOTTOM */
+  transform-origin: center bottom;
+
+  /* Flip + scale WITHOUT position drift */
+  transform: translateX(-50%) scaleX(1) scale(1.5);
+  transition: left 1.8s ease-in-out;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* FLOATING TEXT OVERLAY */
+.e-text {
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* height: 4px; */
+  font-size: 30px;
+ transform: scaleX(1.25);
+  color: #ffffff;
+
+  -webkit-text-stroke: 1px white;
+  paint-order: stroke, fill;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+.labels {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 22px;
+  color: #55aaff;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div class="m-goal">
+  <h1>YouTube Views Progress</h1>
+
+  <div class="e-bar">
+  <div class="e-fill"></div>
+  <img
+    src="https://i.imgur.com/vh1VwXf.gif"
+    class="progress-icon"
+    alt="Progress"
+  />
+
+  <div class="e-text">Loading…</div>
+</div>
+
+
+  <div class="labels">
+    <div class="e-current">0</div>
+    <div class="e-total">0</div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+const viewsGoal = 1_000_000;
+
+function updateViewsProgress() {
+  fetch('sumtotal.txt?ts=' + Date.now())
+    .then(r => r.text())
+    .then(text => {
+      const currentViews = parseInt(text.trim(), 10) || 0;
+      const percent = Math.min((currentViews / viewsGoal) * 100, 100);
+
+      $('.e-fill').css('width', percent + '%');
+      $('.progress-icon').css('left', percent + '%');
+      $('.e-current').text(currentViews.toLocaleString());
+      $('.e-total').text(viewsGoal.toLocaleString());
+      $('.e-text').text(`${currentViews.toLocaleString()} / 1 Mil. Views`);
+    })
+    .catch(() => {
+      $('.e-text').text('Error loading data');
+    });
+}
+
+
+
+$(document).ready(updateViewsProgress);
+</script>
+</body>
+</html>
